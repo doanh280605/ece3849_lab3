@@ -1,0 +1,32 @@
+{
+  "configurations": [
+    {
+      "name": "TM4C1294 Lab1",
+      "includePath": [
+        "${workspaceFolder}",
+        "${workspaceFolder}/..",
+        "${workspaceFolder}/../FreeRTOS/include",
+        "${workspaceFolder}/../FreeRTOS/portable/CCS/ARM_CM4F",
+        "${workspaceFolder}/../libraries/buttonsDriver",
+        "${workspaceFolder}/../libraries/display",
+        "${workspaceFolder}/../libraries/elapsedTime",
+        "${workspaceFolder}/../libraries/joystickDriver",
+        "${workspaceFolder}/../libraries/pll",
+        "${workspaceFolder}/../libraries/timerLib",
+        "${workspaceFolder}/../libraries/HAL_TM4C1294",
+        "/Users/Doanh/ti/TivaWare_C_Series-2.2.0.295",
+        "/Users/Doanh/ti/TivaWare_C_Series-2.2.0.295/driverlib",
+        "/Users/Doanh/ti/TivaWare_C_Series-2.2.0.295/utils"
+      ],
+      "defines": [
+        "ccs=ccs",
+        "PART_TM4C1294NCPDT"
+      ],
+      "compilerPath": "/Applications/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/bin/armcl",
+      "intelliSenseMode": "gcc-arm",
+      "cStandard": "c11",
+      "cppStandard": "c++17"
+    }
+  ],
+  "version": 4
+}

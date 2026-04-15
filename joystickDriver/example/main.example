@@ -1,0 +1,143 @@
+#include <stdint.h>
+#include <stdbool.h>
+
+#include "inc/hw_memmap.h"
+#include "inc/hw_types.h"
+#include "driverlib/sysctl.h"
+#include "driverlib/gpio.h"
+#include "driverlib/adc.h"
+
+#include "pins.h"
+#include "button.h"
+#include "joystick.h"
+
+// ============================================================
+// PINOUT (según tus definiciones de pins.h)
+//
+// JS1  -> PA_0   (botón del joystick)
+// JSX  -> PD_2   (eje X)
+// JSY  -> PK_1   (eje Y)
+// RGB_R -> PK_4
+// RGB_G -> PK_5
+// RGB_B -> PM_0
+// LED adicional -> PN_1 (LED central del LaunchPad)
+// ============================================================
+
+//-------------------------------------------------------------
+// Configuración RGB (BoosterPack MKII)
+//-------------------------------------------------------------
+static void ConfigureRGB(void)
+{
+    SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOK);
+    SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOM);
+    while (!SysCtlPeripheralReady(SYSCTL_PERIPH_GPIOK)) {}
+    while (!SysCtlPeripheralReady(SYSCTL_PERIPH_GPIOM)) {}
+
+    GPIOPinTypeGPIOOutput(GPIO_PORTK_BASE, GPIO_PIN_4 | GPIO_PIN_5);
+    GPIOPinTypeGPIOOutput(GPIO_PORTM_BASE, GPIO_PIN_0);
+    GPIOPinWrite(GPIO_PORTK_BASE, GPIO_PIN_4 | GPIO_PIN_5, 0);
+    GPIOPinWrite(GPIO_PORTM_BASE, GPIO_PIN_0, 0);
+}
+
+static inline void SetRGB(bool r, bool g, bool b)
+{
+    uint8_t maskK = 0;
+    if (r) maskK |= GPIO_PIN_4;
+    if (g) maskK |= GPIO_PIN_5;
+    GPIOPinWrite(GPIO_PORTK_BASE, GPIO_PIN_4 | GPIO_PIN_5, maskK);
+    GPIOPinWrite(GPIO_PORTM_BASE, GPIO_PIN_0, b ? GPIO_PIN_0 : 0);
+}
+
+//-------------------------------------------------------------
+// LED central LaunchPad (PN1)
+//-------------------------------------------------------------
+static void ConfigureLED(void)
+{
+    SysCtlPeripheralEnable(SYSCTL_PERIPH_GPION);
+    while (!SysCtlPeripheralReady(SYSCTL_PERIPH_GPION)) {}
+    GPIOPinTypeGPIOOutput(GPIO_PORTN_BASE, GPIO_PIN_1);
+    GPIOPinWrite(GPIO_PORTN_BASE, GPIO_PIN_1, 0);
+}
+
+static inline void SetLED(bool on)
+{
+    GPIOPinWrite(GPIO_PORTN_BASE, GPIO_PIN_1, on ? GPIO_PIN_1 : 0);
+}
+
+//-------------------------------------------------------------
+// Mapeo dirección  color
+//-------------------------------------------------------------
+static void SetColorForDirection(JoystickDir dir)
+{
+    switch (dir)
+    {
+        case JoystickDir::Center: SetRGB(false, false, false); break;
+        case JoystickDir::N:      SetRGB(false, true,  false); break;
+        case JoystickDir::E:      SetRGB(false, false, true ); break;
+        case JoystickDir::S:      SetRGB(true,  false, false); break;
+        case JoystickDir::W:      SetRGB(true,  true,  false); break;
+        case JoystickDir::NE:     SetRGB(false, true,  true ); break;
+        case JoystickDir::SE:     SetRGB(true,  false, true ); break;
+        case JoystickDir::SW:     SetRGB(true,  true,  false); break;
+        case JoystickDir::NW:     SetRGB(true,  true,  true ); break;
+        default:                  SetRGB(false, false, false); break;
+    }
+}
+
+//-------------------------------------------------------------
+// Variables globales
+//-------------------------------------------------------------
+static bool ledState = false;
+static JoystickDir s_lastDir = JoystickDir::Center;
+
+//-------------------------------------------------------------
+// Callbacks
+//-------------------------------------------------------------
+static void OnDirectionChanged(Joystick &js)
+{
+    s_lastDir = js.direction8();
+    SetColorForDirection(s_lastDir);
+}
+
+static void OnClickCenter()
+{
+    ledState = !ledState;
+    SetLED(ledState);
+}
+
+//-------------------------------------------------------------
+// MAIN
+//-------------------------------------------------------------
+int main(void)
+{
+    uint32_t sysclk = SysCtlClockFreqSet(
+        SYSCTL_XTAL_25MHZ | SYSCTL_OSC_MAIN |
+        SYSCTL_USE_PLL | SYSCTL_CFG_VCO_480,
+        120000000);
+
+    ConfigureRGB();
+    ConfigureLED();
+
+    // --- Joystick del BoosterPack MKII ---
+    // JS1 -> PA_0 (botón), JSX -> PD_2, JSY -> PK_1
+    Joystick js(JSX, JSY, JS1);
+
+    js.setTickIntervalMs(10);      // 100 Hz
+    js.setDeadzone(0.10f);
+    js.setSmoothingAlpha(0.20f);
+    js.setDirectionThreshold(0.30f);
+    js.setDirectionHysteresis(0.22f, 15.0f);
+    js.setRepeatIntervalMs(150);
+
+    js.onDirectionChanged(&OnDirectionChanged);
+    js.attachClick(&OnClickCenter);   // Click del joystick -> enciende/apaga LED PN1
+
+    js.begin();
+    js.calibrateCenter(32);
+
+    while (1)
+    {
+        js.tick();  // lee ejes + botón + eventos
+        SysCtlDelay((sysclk / 100) / 3); // 10ms
+    }
+}
