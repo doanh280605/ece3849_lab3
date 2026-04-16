@@ -26,14 +26,9 @@
 	</natures>
 	<linkedResources>
 		<link>
-			<name>buzzer.cpp</name>
+			<name>app_objects.h</name>
 			<type>1</type>
-			<locationURI>PARENT-0-PROJECT_LOC/buzzer.cpp</locationURI>
-		</link>
-		<link>
-			<name>buzzer.h</name>
-			<type>1</type>
-			<locationURI>PARENT-0-PROJECT_LOC/buzzer.h</locationURI>
+			<locationURI>PARENT-0-PROJECT_LOC/app_objects.h</locationURI>
 		</link>
 		<link>
 			<name>Crystalfontz128x128_ST7735.c</name>
@@ -56,14 +51,24 @@
 			<locationURI>PARENT-1-PROJECT_LOC/libraries/buttonsDriver/button.cpp</locationURI>
 		</link>
 		<link>
-			<name>stopwatch.cpp</name>
+			<name>display.cpp</name>
 			<type>1</type>
-			<locationURI>PARENT-0-PROJECT_LOC/stopwatch.cpp</locationURI>
+			<locationURI>PARENT-0-PROJECT_LOC/display.cpp</locationURI>
 		</link>
 		<link>
-			<name>stopwatch.h</name>
+			<name>display.h</name>
 			<type>1</type>
-			<locationURI>PARENT-0-PROJECT_LOC/stopwatch.h</locationURI>
+			<locationURI>PARENT-0-PROJECT_LOC/display.h</locationURI>
+		</link>
+		<link>
+			<name>game.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-0-PROJECT_LOC/game.cpp</locationURI>
+		</link>
+		<link>
+			<name>game.h</name>
+			<type>1</type>
+			<locationURI>PARENT-0-PROJECT_LOC/game.h</locationURI>
 		</link>
 		<link>
 			<name>timerLib.cpp</name>
